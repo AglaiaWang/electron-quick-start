@@ -1,17 +1,21 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow} = require('electron')
+const { app, BrowserWindow, webContents, ipcMain } = require('electron')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow
 
-function createWindow () {
+let webContentsMap = new Map();
+
+function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      nodeIntegrationInSubFrames: true,
+      webviewTag: true
     }
   })
 
@@ -28,8 +32,37 @@ function createWindow () {
     // when you should delete the corresponding element.
     mainWindow = null
   })
-}
 
+
+
+  mainWindow.webContents.openDevTools();
+
+  ipcMain.on('set', (event, arg) => {
+    const id = arg;
+    const contents = webContentsMap.get(id);
+    if (!contents.debugger.isAttached()) {
+      contents.debugger.attach('1.3');
+    }
+    // console.log(contents, id);
+    if (!contents) {
+      console.log('null contents');
+      return;
+    }
+    contents.debugger.sendCommand('Emulation.setEmitTouchEventsForMouse', { enabled: true }, (error, result) => {
+      console.log('setEmitTouchEventsForMouse', error, result);
+    });
+    contents.debugger.sendCommand('Emulation.setTouchEmulationEnabled', {
+      enabled: true,
+      configuration: 'mobile',
+    }, (error, result) => {
+      console.log('setTouchEmulationEnabled', error, result);
+    });
+
+  })
+}
+app.on('web-contents-created', (event, c) => {
+  webContentsMap.set(c.id, c);
+});
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
