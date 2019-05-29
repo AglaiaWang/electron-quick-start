@@ -7,7 +7,7 @@
 </head>
 
 <body>
-  <webview src="https://www.github.com/" autosize minwidth="576" minheight="432"></webview>
+  <!-- <webview src="https://www.github.com/" autosize minwidth="576" minheight="432"></webview> -->
   <h1>Hello World!</h1>
   <!-- All of the Node.js APIs are available in this renderer process. -->
   We are using Node.js
@@ -16,13 +16,22 @@
   <script>document.write(process.versions.chrome)</script>,
   and Electron
   <script>document.write(process.versions.electron)</script>
-  <button onClick="setCursor()">click</button>
+
+  <webview src="first.html" autosize minheight="300" id="aaa"></webview>
 
   <!-- <iframe src="https://www.baidu.com/" frameborder="0" width=""></iframe> -->
 
   <script>
     // You can also require other files to run in this process
     require('./renderer.js')
+
+    let testWebView = document.querySelector('#aaa');
+    testWebView.addEventListener('did-fail-load', function(event) {
+      console.log('fail event', event);
+    });
+    testWebView.addEventListener('did-finish-load', function (event) {
+        console.log('finish event', event);
+    });
   </script>
 </body>
 
